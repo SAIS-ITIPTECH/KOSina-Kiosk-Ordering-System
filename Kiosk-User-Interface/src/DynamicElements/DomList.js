@@ -22,7 +22,6 @@ export class DomList {
 
     //render DOM containing the data of category\products\orderList
     renderAll() {
-        this.clear();
         this.items.forEach(item => item.render(this.container));
     }
 }

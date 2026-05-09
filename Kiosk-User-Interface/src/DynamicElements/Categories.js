@@ -12,6 +12,7 @@ export class Categories extends DomList {
     }
 
     async display() {
+        this.clear();
         let categories = await getApi("categories")
         this.putToItems(categories);
         this.renderAll();
@@ -36,9 +37,8 @@ export class Categories extends DomList {
 
     setDefault(defaultId){
         const defaultCategoryBtn = document.getElementById(defaultId);
-        console.log(defaultCategoryBtn)
         defaultCategoryBtn.classList.add('active-category');
-        this.categoryTitle.innerText = defaultCategoryBtn.innerText;
+        this.categoryTitle.innerText = defaultCategoryBtn.childNodes[3].innerText;
         this.product.display(defaultCategoryBtn.id)
     }
 }

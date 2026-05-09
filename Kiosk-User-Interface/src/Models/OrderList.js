@@ -3,8 +3,6 @@ export class OrderList {
         this.products = [];
         this.totalPrice = 0;
         this.diningMethod;
-        this.paymentMethod;
-        this.paid = false;
     }
 
     //add order used by the Products Class
@@ -38,16 +36,9 @@ export class OrderList {
 
     }
 
-    //used by reset order button
-    //remove all the data in the object
     resetOrder(){
         this.products = [];
         this.totalPrice = 0;
         this.diningMethod = null;
-    }
-
-    //Ill do this later
-    confirmOrder(){
-
     }
 }

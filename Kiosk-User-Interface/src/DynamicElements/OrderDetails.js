@@ -9,7 +9,7 @@ export class OrderDetails extends DomList {
     }
     
     display() {
-        console.log(orderList.products, 1)
+        this.clear();
         orderList.products.forEach((index, order) => {
             this.items.push(new DomOrderDetail(order, index))
         })

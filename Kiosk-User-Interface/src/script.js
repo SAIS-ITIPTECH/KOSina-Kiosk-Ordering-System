@@ -6,6 +6,7 @@ export const orderList = new OrderList();
 // ===============================================================
 // DINING SELECTION
 function selectDiningOption(option) {
+    orderList.setDiningMethod(option)
     const diningSection = document.getElementById('diningSection');
     const menuSection = document.getElementById('menuSection');
     const diningOptionText = document.getElementById('diningOption');
@@ -138,13 +139,13 @@ function renderSummary() {
     const list = document.getElementById('summaryList');
     list.innerHTML = '';
 
-    orderList.forEach(item => {
+    orderList.products.forEach(item => {
         const row = document.createElement('div');
         row.className = "flex justify-between items-center text-2xl";
         row.innerHTML = `
-            <span class="font-bold text-gray-600">${item.name}</span>
-            <span class="text-sm text-gray-500 ">x${item.quantity}</span>
-            <span class="font-bold text-gray-500">₱ ${(item.price * item.quantity).toFixed(2)}</span>
+            <span class="font-bold text-gray-600">${item.getName()}</span>
+            <span class="text-sm text-gray-500 ">x${item.getQuantity()}</span>
+            <span class="font-bold text-gray-500">${item.getTotalPrice().toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</span>
         `;
         list.appendChild(row);
     });
@@ -169,6 +170,33 @@ function backToMenu() {
     document.getElementById('menuSection').classList.add('flex');
 }
 
+async function selectPaymentMethod(method){
+    console.log(method)
+    showStep('stepService', 75);
+    const paymentMethod = (method === "cashless") ? "cashless" : "cash";
+    let orderObject = [];
+    for (let orders of orderList.products) {
+        orderObject.push({
+            "productId": orders.getId(),
+            "quantity": orders.getQuantity()
+        })
+    }
+    let checkoutUrl = await postApi("neworder", {
+        "paymentMethod": paymentMethod,
+        "restoName": getCookie("resto"),
+        "orders": orderObject
+    });
+
+    if (paymentMethod === "cashless") { checkout(checkoutUrl) }
+}
+
+function checkout(checkoutUrl){
+    console.log("letsgo")
+    const checkoutPanel = document.getElementById("checkout");
+    checkoutPanel.classList.remove('section-hidden');
+    checkoutPanel.src = checkoutUrl;
+}
+
 function completeCheckout() {
     const num = Math.floor(Math.random() * 99) + 1;
     document.getElementById('finalOrderNumber').innerText = num.toString().padStart(2, '0');
@@ -178,7 +206,7 @@ function completeCheckout() {
 
 function resetToStart() {
     let orderpanel = document.getElementById('orderPanel');
-    orderItems = [];
+    orderList.resetOrder();
     orderpanel.innerHTML = '';
     document.getElementById('subtotal').innerText = '₱ 0.00';
     document.getElementById('totalPrice').innerText = '₱ 0.00';
@@ -209,7 +237,7 @@ export async function postApi(target, body){
         method: "POST",
         headers: {
             "Content-Type": "application/json; charset=utf-8",
-            "Authorization": `Bearer ${getCookie()}`
+            "Authorization": `Bearer ${getCookie("token")}`
         },
         body: JSON.stringify(body)
     }) 
@@ -220,7 +248,7 @@ export async function getApi(target, id = "") {
         let data = await fetch(`https://kosina-api.up.railway.app/${target}/${id}`,{
             method: "GET",
             headers: {
-                "Authorization": `Bearer ${getCookie()}`
+                "Authorization": `Bearer ${getCookie("token")}`
             }
         }) 
         return await data.json();
@@ -263,11 +291,11 @@ async function checkToken(){
     }
 }
 
-function getCookie(){
+function getCookie(target){
     const cookies = document.cookie.split(';');
     for(const cookie of cookies){
         const [name, value] = cookie.split('=');
-        if(name.trim() === "token"){
+        if(name.trim() === target){
             return decodeURIComponent(value);
         }
     }
@@ -279,7 +307,6 @@ function logout(){
     document.cookie = "token= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
     document.cookie = "name= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
     document.cookie = "resto= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
-    mainPanel.classList.toggle("hide");
     location.reload();
 }
 
@@ -295,5 +322,6 @@ window.closePopup = closePopup;
 window.startCheckout = startCheckout;
 window.backToMenu = backToMenu;
 window.showStep = showStep;
+window.selectPaymentMethod = selectPaymentMethod;
 window.completeCheckout = completeCheckout;
 window.resetToStart = resetToStart;

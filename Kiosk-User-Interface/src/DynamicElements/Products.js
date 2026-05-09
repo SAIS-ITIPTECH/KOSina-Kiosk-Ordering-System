@@ -13,6 +13,7 @@ export class Products extends DomList {
     }
     
     async display(categoryId) {
+        this.clear()
         let products = await getApi("products", categoryId);
         await this.putToItems(products)
         this.renderAll();
@@ -65,12 +66,5 @@ export class Products extends DomList {
             document.getElementById('checkoutBtn').disabled = false;
             this.orderDetails.display()
         }
-    }
-
-    //display the products of the first category
-    default(){
-        const first = this.getFirstCategory()
-        this.changeTitle(first.innerHTML);
-        this.display(first.value)
     }
 }
