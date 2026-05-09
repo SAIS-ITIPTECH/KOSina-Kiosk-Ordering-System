@@ -7,5 +7,17 @@
 </head>
 <body>
     <h1>HELOOOOOOOOOOOOOOOOOOOOOO</h1>
+    <script>
+     
+    window.parent.postMessage('closeMe', 'https://your-parent-site.com');
+
+    // On the parent page
+    window.addEventListener('message', (e) => {
+    if (e.origin !== 'https://trusted-iframe-domain.com') return; // validate!
+    if (e.data === 'closeMe') {
+        document.querySelector('iframe').remove();
+    }
+    });
+    </script>
 </body>
 </html>

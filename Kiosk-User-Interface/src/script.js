@@ -27,6 +27,9 @@ function selectDiningOption(option) {
     }, 600);
 }
 
+// ===============================================================
+// HOME BUTTOM TO RESET THE ORDER
+
 function home() {
     const diningSection = document.getElementById('diningSection');
     const menuSection = document.getElementById('menuSection');
@@ -34,6 +37,8 @@ function home() {
     diningSection.classList.remove('section-hidden', 'fade-out-up');
     menuSection.classList.add('hidden');
     menuSection.classList.remove('flex');
+    document.getElementById('orderPanel').innerText = "";
+    orderList.resetOrder()
 }
 
 document.getElementById('checkoutBtn').disabled = (orderPanel.children.length === 0);
@@ -120,7 +125,7 @@ function removeItem(targetItem) {
 
 
 // ===============================================================
-// 
+// OPENS CHECKOUT SCREEN
 
 function startCheckout() {
     document.getElementById('menuSection').classList.add('hidden');
@@ -133,6 +138,9 @@ function startCheckout() {
     renderSummary();
     showStep('stepSummary', 25);
 }
+
+// ===============================================================
+// SUMMARY FOR THE ORDER
 
 function renderSummary() {
 
@@ -153,6 +161,9 @@ function renderSummary() {
     document.getElementById('summaryTotal').innerText = document.getElementById('totalPrice').innerText;
 }
 
+// ===============================================================
+// DETECT THE STEP OF THE CHECKOUT
+
 function showStep(stepId, progress) {
     ['stepSummary', 'stepPayment', 'stepService', 'stepFinal'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
@@ -163,16 +174,22 @@ function showStep(stepId, progress) {
     document.getElementById('progressBar').style.width = progress + '%';
 }
 
+// ===============================================================
+// GO BACK TO THE ORDER MENU
+
 function backToMenu() {
     document.getElementById('checkoutSection').classList.add('hidden');
     document.getElementById('checkoutSection').classList.remove('flex');
     document.getElementById('menuSection').classList.remove('hidden');
     document.getElementById('menuSection').classList.add('flex');
+    
 }
+
+// ===============================================================
+// SELECT PAYMENT METHOD
 
 async function selectPaymentMethod(method){
     console.log(method)
-    showStep('stepService', 75);
     const paymentMethod = (method === "cashless") ? "cashless" : "cash";
     let orderObject = [];
     for (let orders of orderList.products) {
@@ -181,28 +198,57 @@ async function selectPaymentMethod(method){
             "quantity": orders.getQuantity()
         })
     }
-    let checkoutUrl = await postApi("neworder", {
+    let checkoutInfo = await postApi("neworder", {
         "paymentMethod": paymentMethod,
         "restoName": getCookie("resto"),
         "orders": orderObject
     });
 
-    if (paymentMethod === "cashless") { checkout(checkoutUrl) }
+    orderList.orderId = checkoutInfo["orderId"];
+
+    if (paymentMethod === "cashless") { 
+        checkout(checkoutInfo) 
+    } else { 
+        console.log("next")
+        showStep('stepService', 75); 
+    }
 }
 
-function checkout(checkoutUrl){
-    console.log("letsgo")
-    const checkoutPanel = document.getElementById("checkout");
-    checkoutPanel.classList.remove('section-hidden');
-    checkoutPanel.src = checkoutUrl;
+// ===============================================================
+// MAKES A POP UP WINDOW IF PAYMENT IS CASHLESS
+
+async function checkout(checkoutInfo){
+    const width = 800;
+    const height = 800;
+    const left = (window.screen.width / 2) - (width / 2);
+    const top = (window.screen.height / 2) - (height / 2);
+    const checkoutPopup = window.open(checkoutInfo["url"], 'paymongo_checkout', 
+        `width=${width},height=${height},left=${left},top=${top},resizable=no,scrollbars=yes`
+    );
+
+    const interval = setInterval(async () => {
+        const response = await getApi("checkpaid", checkoutInfo["id"])      
+        if (await response["data"]["attributes"]["payments"].length != 0) {
+            clearInterval(interval);
+            checkoutPopup.close();
+            showStep('stepService', 75);
+        } else if (checkoutPopup.closed) {
+            clearInterval(interval);
+            window.alert("payment cancelled")
+        }
+    }, 2000);
 }
+
+// ===============================================================
+// FINISH THE CHECKOUT
 
 function completeCheckout() {
-    const num = Math.floor(Math.random() * 99) + 1;
-    document.getElementById('finalOrderNumber').innerText = num.toString().padStart(2, '0');
-
+    document.getElementById('finalOrderNumber').innerText = orderList.orderId.slice(-4);
     showStep('stepFinal', 100);
 }
+
+// ===============================================================
+// RESET THE KIOSK FROM THE START AFTER THE ORDER
 
 function resetToStart() {
     let orderpanel = document.getElementById('orderPanel');
@@ -226,14 +272,11 @@ function resetToStart() {
 
 document.getElementById('checkoutBtn').disabled = true;
 
-
-
-
 // ===============================================================
 // API CONNECTORS
 
 export async function postApi(target, body){
-    let data = await fetch(`https://kosina-api.up.railway.app/${target}`,{
+    let response = await fetch(`https://kosina-api.up.railway.app/${target}`,{
         method: "POST",
         headers: {
             "Content-Type": "application/json; charset=utf-8",
@@ -241,24 +284,28 @@ export async function postApi(target, body){
         },
         body: JSON.stringify(body)
     }) 
-    return await data.json();
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
 }
 
 export async function getApi(target, id = "") {
-        let data = await fetch(`https://kosina-api.up.railway.app/${target}/${id}`,{
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${getCookie("token")}`
-            }
-        }) 
-        return await data.json();
-    }
+    let response = await fetch(`https://kosina-api.up.railway.app/${target}/${id}`,{
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${getCookie("token")}`
+        }
+    }) 
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+}
 
 const loginButton = document.getElementById("loginButton");
 const username = document.getElementById("username");
 const password = document.getElementById("password");
 
 
+// ===============================================================
+// LOGIN SCREEN
 async function submit(){
     let data = await postApi("login", {
         "username": username.value,
@@ -274,11 +321,17 @@ async function submit(){
     }
 }
 
+// ===============================================================
+// SAVE THE RESTO DATA TO COOKIE 
+
 function saveToCookie(data){
     document.cookie = `token=${data["token"]}; max-age=${data["expiration"]}; path=/`
     document.cookie = `name=${data["name"]}; max-age=${data["expiration"]}; path=/`
     document.cookie = `resto=${data["resto"]}; max-age=${data["expiration"]}; path=/`
 }
+
+// ===============================================================
+// CHECK IF TOKEN EXIST IN THE COOKIE
 
 async function checkToken(){
     let data = await get("return");
@@ -291,6 +344,9 @@ async function checkToken(){
     }
 }
 
+// ===============================================================
+// GET DATA FROM COOKIE
+
 function getCookie(target){
     const cookies = document.cookie.split(';');
     for(const cookie of cookies){
@@ -302,6 +358,8 @@ function getCookie(target){
     return null;
 }
 
+// ===============================================================
+// LOG OUT THE ACCOUNT FROM THE KIOSK
 
 function logout(){
     document.cookie = "token= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
@@ -311,7 +369,8 @@ function logout(){
 }
 
 // ===============================================================
-// WINDOW SHARED FUNCTIONS
+// MAKES IT POSSIBLE FOR HTML TO CALL THESE FUNCTIONS FURING 
+
 window.submit = submit;
 window.selectDiningOption = selectDiningOption;
 window.home = home;

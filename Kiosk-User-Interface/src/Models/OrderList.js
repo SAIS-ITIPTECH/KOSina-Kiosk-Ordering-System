@@ -3,6 +3,7 @@ export class OrderList {
         this.products = [];
         this.totalPrice = 0;
         this.diningMethod;
+        this.orderId;
     }
 
     //add order used by the Products Class
@@ -19,11 +20,6 @@ export class OrderList {
     // used by payment method button
     setPaymentMethod(paymentMethod){
         this.paymentMethod = paymentMethod;
-    }
-
-    //used by either gcash or paymaya button
-    togglePaid(){
-        this.paid = true;
     }
     
     //called everytime a new order added ti the orderList

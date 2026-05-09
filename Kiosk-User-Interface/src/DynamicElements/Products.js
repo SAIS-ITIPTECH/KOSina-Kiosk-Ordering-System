@@ -23,12 +23,11 @@ export class Products extends DomList {
         this.items = await products.map(pro => {
             let item = new DomProduct(pro);
 
-            //give event listener to the buttons
+            //Called if a product is clicked
             item.addOrder = async () => { 
                 const order = new Order(item.name, item.price, item.id, item.imgUrl);
                 await this.finishOrder(order, item);
             };
-
             return item;   
         });
     }
@@ -54,8 +53,8 @@ export class Products extends DomList {
         })
     }
 
+    // Checks if a product is already in the orderlist
     checkIfRepeat(order){
-        console.log(orderList);
         const existingItem = orderList.products.find(item => item.getName() === order.getName());
         if (existingItem) {
             existingItem.setQuantity(existingItem.getQuantity() + order.getQuantity());

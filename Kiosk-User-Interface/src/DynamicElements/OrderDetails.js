@@ -5,7 +5,6 @@ import { orderList } from "../script.js";
 export class OrderDetails extends DomList {
     constructor(){
         super("orderPanel");
-        this.totalPriceScreen = document.getElementById('totalPrice');
     }
     
     display() {
@@ -15,9 +14,5 @@ export class OrderDetails extends DomList {
         })
         this.renderAll(); 
         this.items = []
-    }
-
-    displayTotalPrice(){
-        this.totalPriceScreen.innerHTML = `Total Price: ${orderList.totalPrice}`;
     }
 }

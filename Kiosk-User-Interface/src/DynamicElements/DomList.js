@@ -20,7 +20,7 @@ export class DomList {
         return document.getElementsByClassName('categoryButtons')[0]
     }
 
-    //render DOM containing the data of category\products\orderList
+    //Render all of the HTML builder to the screen
     renderAll() {
         this.items.forEach(item => item.render(this.container));
     }

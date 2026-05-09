@@ -9,6 +9,7 @@ export class DomOrderDetail extends DomContainer {
         this.index = index;
     }
 
+    // HTML builder for the order details
     render(container){
         container.innerHTML += `
             <div class="flex items-center gap-3 border-b pb-4">
