@@ -46,6 +46,18 @@
 
 <body class="antialiased">
 
+    <!-------------------Log In Screen ------------------->
+    <div id="loginPanel">
+        <h1>LOGIN</h1>
+        <label for="email">USERNAME: </label>
+        <input type="text" id="username" >
+        <br>
+        <label for="pass">PASSWORD: </label>
+        <input type="text" id="password">
+        <br>
+        <button value="" id="loginButton" onclick="submit()">LOGIN</buton>
+    </div>
+
 
     <!-------------------Dining Option Screen ------------------->
 
@@ -124,22 +136,7 @@
                 </h1>
             </header>
 
-            <div class="mb-8 flex justify-center gap-4">
-
-
-                <button id="defaultCategory"
-                    class="category flex h-24 w-24 flex-col items-center justify-center rounded-xl border bg-white shadow-sm transition-all duration-200 hover:bg-[#d8e0c6] hover:shadow-xl hover:scale-105">
-                    <div class="mb-2 h-8 w-8 border-2 border-dashed border-gray-300 rounded"></div>
-                    <span class="categoryName text-[10px] text-black font-bold uppercase ">Best Seller</span>
-                </button>
-
-                <button
-                    class="category flex h-24 w-24 flex-col items-center justify-center rounded-xl border bg-white shadow-sm transition-all duration-200 hover:bg-[#d8e0c6] hover:shadow-xl hover:scale-105">
-                    <div class="mb-2 h-8 w-8 border-2 border-dashed border-gray-300 rounded"></div>
-                    <span class="categoryName text-[10px] font-bold uppercase text-black">Main Dish</span>
-                </button>
-
-            </div>
+            <div class="mb-8 flex justify-center gap-4" id="categoryContainer"></div>
 
 
             <div class="grid flex-1 grid-cols-3 gap-6 overflow-y-auto pb-24 no-scrollbar">
@@ -343,7 +340,7 @@
 
 
 
-    <script src="/Kiosk-User-Interface/src/script.js"></script>
+    <script type="module" src="/Kiosk-User-Interface/src/script.js"></script>
 
 </body>
 

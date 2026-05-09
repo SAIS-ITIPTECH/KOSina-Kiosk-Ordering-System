@@ -1,6 +1,42 @@
+import { Categories } from "./DynamicElements/Categories.js";
+
+// // ==============================================================
+// // CLASS CONNECTORS
+
+
+// const orderList = new OrderList();
+// const quantityPanel = new QuantityPanel('increase', 'decrease', 'confirm', 'quantity', 'quantityContainer');
+// quantityPanel.bind();
+
+// const allButtons = new AllButtons();
+// allButtons.createAllButton();
+
+// const categoryList = new Categories();
+// await categoryList.display();
+
+// const productList = new Products();
+// productList.default();
+
+// export {orderList, quantityPanel}
+
+
+// ===============================================================
+// WINDOW SHARED FUNCTIONS
+window.submit = submit;
+window.selectDiningOption = selectDiningOption;
+window.home = home;
+window.updateQty = updateQty;
+window.addToOrder = addToOrder;
+window.closePopup = closePopup;
+window.startCheckout = startCheckout;
+window.backToMenu = backToMenu;
+window.showStep = showStep;
+window.completeCheckout = completeCheckout;
+window.resetToStart = resetToStart;
+
+
 // ===============================================================
 // DINING SELECTION
-
 function selectDiningOption(option) {
     const diningSection = document.getElementById('diningSection');
     const menuSection = document.getElementById('menuSection');
@@ -8,6 +44,9 @@ function selectDiningOption(option) {
 
     diningOptionText.innerText = "Dining Option: " + option;
     diningSection.classList.add('fade-out-up');
+
+    const categoryObject = new Categories();
+    categoryObject.display();
 
     setTimeout(() => {
         diningSection.classList.add('section-hidden');
@@ -35,7 +74,6 @@ document.getElementById('checkoutBtn').disabled = (orderPanel.children.length ==
 // CATEGORY SELECTION 
 
 
-const categoryTitle = document.getElementById('categoryTitle');
 const categoryButtons = document.querySelectorAll('.category');
 const defaultCategoryBtn = document.getElementById('defaultCategory');
 
@@ -44,21 +82,21 @@ if (defaultCategoryBtn) {
     defaultCategoryBtn.classList.add('active-category');
 }
 
-categoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const categoryName = button.querySelector('.categoryName').innerText;
+// categoryButtons.forEach(button => {
+//     button.addEventListener('click', () => {
+//         const categoryName = button.querySelector('.categoryName').innerText;
 
-        categoryTitle.innerText = categoryName;
+//         categoryTitle.innerText = categoryName;
 
-        const currentActive = document.querySelector('.category.active-category');
-        if (currentActive) {
-            currentActive.classList.remove('active-category');
-        }
+//         const currentActive = document.querySelector('.category.active-category');
+//         if (currentActive) {
+//             currentActive.classList.remove('active-category'); 
+//         }
 
-        button.classList.add('active-category');
+//         button.classList.add('active-category');
 
-    });
-})
+//     });
+// })
 
 
 // ===============================================================
@@ -272,3 +310,88 @@ function resetToStart() {
 }
 
 document.getElementById('checkoutBtn').disabled = true;
+
+
+
+
+// ===============================================================
+// API CONNECTORS
+
+export async function postApi(target, body){
+    let data = await fetch(`https://kosina-api.up.railway.app/${target}`,{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Authorization": `Bearer ${getCookie()}`
+        },
+        body: JSON.stringify(body)
+    }) 
+    return await data.json();
+}
+
+export async function getApi(target, id = "") {
+        let data = await fetch(`https://kosina-api.up.railway.app/${target}/${id}`,{
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${getCookie()}`
+            }
+        }) 
+        return await data.json();
+    }
+
+const loginButton = document.getElementById("loginButton");
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+
+
+async function submit(){
+    let data = await postApi("login", {
+        "username": username.value,
+        "password": password.value
+    });
+
+    username.value = "";
+    password.value = "";
+
+    if (data["status"] === "error") {window.alert(`${data["message"]}`);}
+    else{
+        saveToCookie(data);
+    }
+}
+
+function saveToCookie(data){
+    document.cookie = `token=${data["token"]}; max-age=${data["expiration"]}; path=/`
+    document.cookie = `name=${data["name"]}; max-age=${data["expiration"]}; path=/`
+    document.cookie = `resto=${data["resto"]}; max-age=${data["expiration"]}; path=/`
+}
+
+async function checkToken(){
+    let data = await get("return");
+    if (data["status"] === "error") {
+        window.alert(`${data["message"]}`);
+        
+    }
+    else{
+        window.alert("welcome back");
+    }
+}
+
+function getCookie(){
+    const cookies = document.cookie.split(';');
+    for(const cookie of cookies){
+        const [name, value] = cookie.split('=');
+        if(name.trim() === "token"){
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+
+
+function logout(){
+    document.cookie = "token= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
+    document.cookie = "name= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
+    document.cookie = "resto= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
+    mainPanel.classList.toggle("hide");
+    location.reload();
+}
