@@ -135,43 +135,22 @@
                 <h1 id="categoryTitle" class="text-4xl font-black uppercase tracking-tight text-[#76a609]">Best Seller
                 </h1>
             </header>
-
+            
+            <!--================================ CATEGORY BUTTONS ===================================-->
             <div class="mb-8 flex justify-center gap-4" id="categoryContainer"></div>
 
-
-            <div class="grid flex-1 grid-cols-3 gap-6 overflow-y-auto pb-24 no-scrollbar">
-
-                <button class="group flex flex-col items-center p-4 transition-all active:scale-95">
-                    <img src="/Kiosk-User-Interface/images/food1.png"
-                        class="mb-4 aspect-square w-full max-w-40 border-2 border-dashed border-gray-300 rounded-full transition-colors group-hover:border-[#76a609]"
-                        alt="Food 1">
-                    <h3 class="text-xs font-bold uppercase text-gray-600">FOOD 1</h3>
-                    <p class="font-bold text-[#76a609]">₱ 00.00</p>
-                </button>
-
-                <button class="group flex flex-col items-center p-4 transition-all active:scale-95">
-                    <img src="/Kiosk-User-Interface/images/food3.jpeg"
-                        class="mb-4 aspect-square w-full max-w-40 border-2 border-dashed border-gray-300 rounded-full transition-colors group-hover:border-[#76a609]"
-                        alt="Food 2">
-                    <h3 class="text-xs font-bold uppercase text-gray-600">FOOD 2</h3>
-                    <p class="font-bold text-[#76a609]">₱ 00.00</p>
-                </button>
-
-            </div>
+            <!--================================ PR0DUCT BUTTONS ===================================-->
+            <div class="grid flex-1 grid-cols-3 gap-6 overflow-y-auto pb-24 no-scrollbar" id="productList"></div>
 
 
+            <!--================================ Popup ===================================-->
             <div id="quantityPopUp" class="">
                 <div id="modalOverlay"
                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 hidden backdrop-blur-sm">
 
                     <div class="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl scale-100 transition-transform">
 
-                        <div class="flex flex-col items-center">
-                            <img id="popupImg" src="" alt="Selected Food"
-                                class="mb-4 aspect-square w-48 rounded-full border-4 border-[#76a609] object-cover shadow-md">
-                            <h3 id="popupTitle" class="text-xl font-bold uppercase text-gray-800">FOOD NAME</h3>
-                            <p id="popupPrice" class="text-lg font-bold text-[#76a609]">₱ 00.00</p>
-                        </div>
+                        <div class="flex flex-col items-center" id="productInfo"></div>
 
                         <hr class="my-6 border-gray-100">
 
@@ -184,11 +163,11 @@
                         </div>
 
                         <div class="flex flex-col gap-3">
-                            <button onclick="addToOrder()"
+                            <button id="addOrder"
                                 class="w-full rounded-xl bg-[#76a609] py-4 font-bold uppercase text-white shadow-lg transition-all hover:bg-[#658e08] active:scale-95">
                                 Add to Order
                             </button>
-                            <button onclick="closePopup()"
+                            <button id="closePopup"
                                 class="w-full py-2 font-bold uppercase text-gray-400 hover:text-gray-600">
                                 Cancel
                             </button>

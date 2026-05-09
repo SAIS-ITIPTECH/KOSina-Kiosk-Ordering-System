@@ -1,38 +1,6 @@
 import { Categories } from "./DynamicElements/Categories.js";
-
-// // ==============================================================
-// // CLASS CONNECTORS
-
-
-// const orderList = new OrderList();
-// const quantityPanel = new QuantityPanel('increase', 'decrease', 'confirm', 'quantity', 'quantityContainer');
-// quantityPanel.bind();
-
-// const allButtons = new AllButtons();
-// allButtons.createAllButton();
-
-// const categoryList = new Categories();
-// await categoryList.display();
-
-// const productList = new Products();
-// productList.default();
-
-// export {orderList, quantityPanel}
-
-
-// ===============================================================
-// WINDOW SHARED FUNCTIONS
-window.submit = submit;
-window.selectDiningOption = selectDiningOption;
-window.home = home;
-window.updateQty = updateQty;
-window.addToOrder = addToOrder;
-window.closePopup = closePopup;
-window.startCheckout = startCheckout;
-window.backToMenu = backToMenu;
-window.showStep = showStep;
-window.completeCheckout = completeCheckout;
-window.resetToStart = resetToStart;
+import { OrderList } from "./Models/OrderList.js";
+export const orderList = new OrderList();
 
 
 // ===============================================================
@@ -82,43 +50,27 @@ if (defaultCategoryBtn) {
     defaultCategoryBtn.classList.add('active-category');
 }
 
-// categoryButtons.forEach(button => {
-//     button.addEventListener('click', () => {
-//         const categoryName = button.querySelector('.categoryName').innerText;
-
-//         categoryTitle.innerText = categoryName;
-
-//         const currentActive = document.querySelector('.category.active-category');
-//         if (currentActive) {
-//             currentActive.classList.remove('active-category'); 
-//         }
-
-//         button.classList.add('active-category');
-
-//     });
-// })
-
-
 // ===============================================================
 // ORDER POPUP
-
 
 const modal = document.getElementById('modalOverlay');
 const qtyText = document.getElementById('quantityCount');
 let currentQty = 1;
 
-function openPopup(imgSrc, title, price) {
-    document.getElementById('popupImg').src = imgSrc;
-    document.getElementById('popupTitle').innerText = title;
-    document.getElementById('popupPrice').innerText = price;
+export function openPopup(imgSrc, title, price) {
+    document.getElementById('productInfo').innerHTML = `
+        <img id="popupImg" src="${imgSrc}" alt="Selected Food"
+        class="mb-4 aspect-square w-48 rounded-full border-4 border-[#76a609] object-cover shadow-md">
+        <h3 id="popupTitle" class="text-xl font-bold uppercase text-gray-800">${title}</h3>
+        <p id="popupPrice" class="text-lg font-bold text-[#76a609]">${price}</p>
+    `
 
     currentQty = 1;
     qtyText.innerText = currentQty;
-
     modal.classList.remove('hidden');
 }
 
-function closePopup() {
+export function closePopup() {
     modal.classList.add('hidden');
 }
 
@@ -140,99 +92,34 @@ document.querySelectorAll('.grid button.group').forEach(btn => {
 
 
 
-
-
 // ===============================================================
 // ORDER LIST
 
+function changeQty(name, delta) {
+    const targetItem = orderList.products.find(item => item.getName() === name);
+    targetItem.setQuantity(targetItem.getQuantity() + delta);
+    orderList.calculateTotalPrice();
 
-
-let orderItems = [];
-
-function addToOrder() {
-    const title = document.getElementById('popupTitle').innerText;
-    const priceText = document.getElementById('popupPrice').innerText;
-    const price = parseFloat(priceText.replace('₱', '').trim());
-    const image = document.getElementById('popupImg').src;
-    const qty = parseInt(document.getElementById('quantityCount').innerText);
-    const orderPanel = document.getElementById('orderPanel');
-
-
-    const existingItem = orderItems.find(item => item.name === title);
-
-    if (existingItem) {
-        existingItem.quantity += qty;
+    if (targetItem.getQuantity() < 1) {
+        removeItem(targetItem.getName());
     } else {
-        orderItems.push({
-            name: title,
-            price: price,
-            image: image,
-            quantity: qty
-        });
-    }
-
-    document.getElementById('checkoutBtn').disabled = false;
-
-    renderOrder();
-    closePopup();
-}
-
-function renderOrder() {
-    const panel = document.getElementById('orderPanel');
-    panel.innerHTML = '';
-    let total = 0;
-
-    orderItems.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
-
-        panel.innerHTML += `
-            <div class="flex items-center gap-3 border-b pb-4">
-                <img src="${item.image}" class="h-12 w-12 rounded object-cover border border-gray-200">
-                <div class="flex-1">
-                    <p class="text-sm font-bold uppercase">${item.name}</p>
-                    <p class="text-xs text-[#76a609] font-bold">₱ ${item.price.toFixed(2)}</p>
-                </div>
-                
-                <!-- Edit Quantity Controls -->
-                <div class="flex items-center gap-2">
-                    <button onclick="changeQty(${index}, -1)" class="h-6 w-6 rounded bg-gray-100 text-xs font-bold">-</button>
-                    <span class="text-sm font-bold w-4 text-center">${item.quantity}</span>
-                    <button onclick="changeQty(${index}, 1)" class="h-6 w-6 rounded bg-[#d8e0c6] text-[#76a609] text-xs font-bold">+</button>
-                    <button onclick="removeItem(${index})" class="ml-2 text-red-400 hover:text-red-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-
-    document.getElementById('subtotal').innerText = `₱ ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-    document.getElementById('totalPrice').innerText = `₱ ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-}
-
-function changeQty(index, delta) {
-    orderItems[index].quantity += delta;
-    if (orderItems[index].quantity < 1) {
-        removeItem(index);
-    } else {
-        renderOrder();
+        document.getElementById(`order${name}`).innerText = targetItem.getQuantity();
+        document.getElementById("totalPrice").innerText = orderList.totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
+        
     }
 }
 
-function removeItem(index) {
-    orderItems.splice(index, 1);
-    renderOrder();
+function removeItem(targetItem) {
+    console.log(orderList);
+    orderList.products = orderList.products.filter(orders => orders.getName() != targetItem)
+    orderList.calculateTotalPrice();
+    document.getElementById(`order${targetItem}`).parentElement.parentElement.remove()
+    document.getElementById("totalPrice").innerText = orderList.totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
 }
-
 
 
 // ===============================================================
 // 
-
-
 
 function startCheckout() {
     document.getElementById('menuSection').classList.add('hidden');
@@ -251,7 +138,7 @@ function renderSummary() {
     const list = document.getElementById('summaryList');
     list.innerHTML = '';
 
-    orderItems.forEach(item => {
+    orderList.forEach(item => {
         const row = document.createElement('div');
         row.className = "flex justify-between items-center text-2xl";
         row.innerHTML = `
@@ -395,3 +282,18 @@ function logout(){
     mainPanel.classList.toggle("hide");
     location.reload();
 }
+
+// ===============================================================
+// WINDOW SHARED FUNCTIONS
+window.submit = submit;
+window.selectDiningOption = selectDiningOption;
+window.home = home;
+window.updateQty = updateQty;
+window.changeQty = changeQty;
+window.removeItem = removeItem;
+window.closePopup = closePopup;
+window.startCheckout = startCheckout;
+window.backToMenu = backToMenu;
+window.showStep = showStep;
+window.completeCheckout = completeCheckout;
+window.resetToStart = resetToStart;

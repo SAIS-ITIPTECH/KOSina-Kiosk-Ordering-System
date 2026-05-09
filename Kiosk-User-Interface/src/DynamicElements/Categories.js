@@ -27,7 +27,7 @@ export class Categories extends DomList {
                     currentActive.classList.remove('active-category'); 
                 }
                 this.categoryTitle.innerText = item.name;
-                this.product.display(item.index);
+                this.product.display(item.id);
                 item.element.classList.add('active-category');
             }
             return item;
@@ -39,6 +39,6 @@ export class Categories extends DomList {
         console.log(defaultCategoryBtn)
         defaultCategoryBtn.classList.add('active-category');
         this.categoryTitle.innerText = defaultCategoryBtn.innerText;
-        this.product.display(defaultCategoryBtn.display_index)
+        this.product.display(defaultCategoryBtn.id)
     }
 }

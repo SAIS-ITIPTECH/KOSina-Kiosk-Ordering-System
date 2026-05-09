@@ -1,30 +1,23 @@
-class OrderDetails extends DomList {
+import { DomList } from "./DomList.js";
+import { DomOrderDetail } from "./DomOrderDetail.js";
+import { orderList } from "../script.js";
+
+export class OrderDetails extends DomList {
     constructor(){
-        super("orderListContainer2");
+        super("orderPanel");
         this.totalPriceScreen = document.getElementById('totalPrice');
     }
     
     display() {
-        this.items = orderList.products.map(ol => new DomOrderDetail(ol));
-        this.renderAll(); // just re-render, no new listeners
-        this.prepareButtons();
-        this.displayTotalPrice();
+        console.log(orderList.products, 1)
+        orderList.products.forEach((index, order) => {
+            this.items.push(new DomOrderDetail(order, index))
+        })
+        this.renderAll(); 
+        this.items = []
     }
 
     displayTotalPrice(){
         this.totalPriceScreen.innerHTML = `Total Price: ${orderList.totalPrice}`;
-    }
-
-    //prepare all buttons in orderDetails ie. Edit Quantity & Remove Order
-    prepareButtons(){
-        Array.from(document.getElementsByClassName('changeQuantity')).forEach(but => {
-            let change = new ChangeQuantity(but)
-            change.create()
-        })
-
-        Array.from(document.getElementsByClassName('removeOrder')).forEach(but => {
-            let remove = new RemoveOrder(but)
-            remove.create()
-        })
     }
 }
