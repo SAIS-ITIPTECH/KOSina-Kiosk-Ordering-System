@@ -10,13 +10,25 @@ export class Products extends DomList {
     constructor() {
         super("productList");
         this.orderDetails = new OrderDetails();
+        this.cache = new Map();
     }
     
     async display(categoryId) {
-        this.clear()
-        let products = await getApi("products", categoryId);
-        await this.putToItems(products)
+        if (this.isLoading) return;
+        this.isLoading = true;
+        this.clear();
+
+        let products;
+        if (this.cache.has(categoryId)) {
+            products = this.cache.get(categoryId);
+        } else {
+            products = await getApi("products", categoryId);
+            this.cache.set(categoryId, products);
+        }
+
+        await this.putToItems(products);
         this.renderAll();
+        this.isLoading = false;
     }
 
     async putToItems(products){
@@ -55,10 +67,10 @@ export class Products extends DomList {
 
     // Checks if a product is already in the orderlist
     checkIfRepeat(order){
-        const existingItem = orderList.products.find(item => item.getName() === order.getName());
+        const existingItem = orderList.products.find(item => item.getId() === order.getId());
         if (existingItem) {
-            existingItem.setQuantity(existingItem.getQuantity() + order.getQuantity());
-            document.getElementById(`order${existingItem.getName()}`).innerText = existingItem.getQuantity();
+            existingItem.setQuantity(parseInt(existingItem.getQuantity() + order.getQuantity()));
+            document.getElementById(`order${existingItem.getId()}`).innerText = existingItem.getQuantity();
             orderList.calculateTotalPrice()
         } else {
             orderList.addOrder(order);

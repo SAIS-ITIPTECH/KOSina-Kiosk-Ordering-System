@@ -8,7 +8,7 @@ export class Order {
 
     constructor(name, price, id, imgUrl) {
         this.#name = name;
-        this.#id = id;
+        this.#id = parseInt(id);
         this.#price = price;
         this.#imgUrl = imgUrl;
     }
@@ -25,7 +25,7 @@ export class Order {
         this.#price = price;
     }
 
-    setPrice(url) {
+    setUrl(url) {
         this.#imgUrl = url;
     }
 

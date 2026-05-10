@@ -5,7 +5,12 @@ export const orderList = new OrderList();
 
 // ===============================================================
 // DINING SELECTION
-function selectDiningOption(option) {
+let isDiningSelecting = false;
+
+async function selectDiningOption(option) {
+    if (isDiningSelecting) return;
+    isDiningSelecting = true;
+    
     orderList.setDiningMethod(option)
     const diningSection = document.getElementById('diningSection');
     const menuSection = document.getElementById('menuSection');
@@ -15,14 +20,13 @@ function selectDiningOption(option) {
     diningSection.classList.add('fade-out-up');
 
     const categoryObject = new Categories();
-    categoryObject.display();
+    await categoryObject.display();
 
     setTimeout(() => {
+        isDiningSelecting = false
         diningSection.classList.add('section-hidden');
-
         menuSection.classList.remove('hidden');
         menuSection.classList.add('flex');
-
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 600);
 }
@@ -101,25 +105,24 @@ document.querySelectorAll('.grid button.group').forEach(btn => {
 // ===============================================================
 // ORDER LIST
 
-function changeQty(name, delta) {
-    const targetItem = orderList.products.find(item => item.getName() === name);
-    targetItem.setQuantity(targetItem.getQuantity() + delta);
+function changeQty(id, delta) {
+    const targetItem = orderList.products.find(item => item.getId() === parseInt(id));
+    targetItem.setQuantity(parseInt(targetItem.getQuantity() + delta));
     orderList.calculateTotalPrice();
 
     if (targetItem.getQuantity() < 1) {
-        removeItem(targetItem.getName());
+        removeItem(targetItem.getId());
     } else {
-        document.getElementById(`order${name}`).innerText = targetItem.getQuantity();
+        document.getElementById(`order${id}`).innerText = targetItem.getQuantity();
         document.getElementById("totalPrice").innerText = orderList.totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
         
     }
 }
 
-function removeItem(targetItem) {
-    console.log(orderList);
-    orderList.products = orderList.products.filter(orders => orders.getName() != targetItem)
+function removeItem(id) {
+    orderList.products = orderList.products.filter(orders => orders.getId() != parseInt(id))
     orderList.calculateTotalPrice();
-    document.getElementById(`order${targetItem}`).parentElement.parentElement.remove()
+    document.getElementById(`order${id}`).parentElement.parentElement.remove()
     document.getElementById("totalPrice").innerText = orderList.totalPrice.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
 }
 
@@ -334,7 +337,7 @@ function saveToCookie(data){
 // CHECK IF TOKEN EXIST IN THE COOKIE
 
 async function checkToken(){
-    let data = await get("return");
+    let data = await getApi("return");
     if (data["status"] === "error") {
         window.alert(`${data["message"]}`);
         
@@ -362,9 +365,9 @@ function getCookie(target){
 // LOG OUT THE ACCOUNT FROM THE KIOSK
 
 function logout(){
-    document.cookie = "token= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
-    document.cookie = "name= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
-    document.cookie = "resto= ;expires=Tue, 11 Sep 2001 00:00:00 UTC; path=/;";
+    document.cookie = "token= ;max-age=0; path=/;";
+    document.cookie = "name= ;max-age=0; path=/;";
+    document.cookie = "resto= ;max-age=0; path=/;";
     location.reload();
 }
 
@@ -384,3 +387,5 @@ window.showStep = showStep;
 window.selectPaymentMethod = selectPaymentMethod;
 window.completeCheckout = completeCheckout;
 window.resetToStart = resetToStart;
+
+fetch("https://kosina-api.up.railway.app/ping").catch(() => {});

@@ -9,10 +9,11 @@ export class OrderDetails extends DomList {
     
     display() {
         this.clear();
-        orderList.products.forEach((index, order) => {
-            this.items.push(new DomOrderDetail(order, index))
+        this.items = orderList.products.map(order => {
+            return new DomOrderDetail(order)
         })
         this.renderAll(); 
         this.items = []
     }
 }
+ 
